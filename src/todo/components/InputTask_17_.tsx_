@@ -1,0 +1,56 @@
+import React, {useState, useEffect} from 'react';
+import { TodoListContainer } from '../TodoListContainer';
+import { Todo } from '../domain/Todo';
+
+export const InputTask: React.FC = () => {
+
+    const [newTodo, setNewTodo] = useState<string>();
+    const [newDate, setNewDate] = useState<Todo>();
+    const [isDateError, setIsDateError] = useState(false);
+    const [buttonDisabled, setButtonDisabled] = useState(false);
+  
+    const todoContainer = TodoListContainer.useContainer();
+  
+    const buttonClick = () => {
+      if (!newTodo || !newDate) {
+        console.error(`新規タスク確定時にタスクもしくは期限のどちらかが未入力です。`);
+        throw new Error();
+      }
+  
+      todoContainer.addTodo(newTodo, newDate);
+    }
+  
+    const inputTaskChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      setNewTodo(e.target.value);
+    }
+  
+    const inputDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const currentDeadline = new Todo(e.target.value);
+  
+      if (currentDeadline.isPast()) {
+        setIsDateError(true);
+        return;
+      }
+  
+      setNewDate(currentDeadline);
+      setIsDateError(false);
+  
+    }
+  
+    useEffect(() => {
+      if (!newTodo || !newDate) {
+        setButtonDisabled(true);
+      } else {
+        setButtonDisabled(false)
+      }
+    }, [newTodo, newDate])
+  
+    return (
+      <div>
+        <span>タスク:</span><input type="textbox" onChange={inputTaskChange} />
+        <span>期日：</span><input type="date" onChange={inputDateChange} />
+        <button onClick={buttonClick} disabled={buttonDisabled}>入力</button>
+        {(isDateError ? <span style={{ color: 'red' }}>過去の日付は入力できません</span> : '')}
+      </div>
+    );
+  }
